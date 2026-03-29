@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mix Validade - PCEP | Neon Analytics Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        .sync-indicator.syncing {
+            background: #ffaa00;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,217,255,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .stat-card.green .value { color: #00ff88; }
+        .stat-card.yellow .value { color: #ffaa00; }
+        .stat-card.red .value { color: #ff4444; }
+        .stat-card.blue .value { color: #00d9ff; }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: linear-gradient(90deg, rgba(255,68,68,0.2), rgba(255,100,100,0.1));
+            border: 1px solid rgba(255,68,68,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-banner .icon {
+            font-size: 32px;
+        }
+
+        .alert-banner .content h3 {
+            color: #ff6666;
+            margin-bottom: 5px;
+        }
+
+        .alert-banner .content p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(0,217,255,0.3);
+            border-color: #00d9ff;
+        }
+
+        .filter-btn.clear {
+            background: rgba(255,68,68,0.3);
+            border-color: #ff4444;
+        }
+
+        /* Tables */
+        .table-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            font-size: 18px;
+            color: #00d9ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            background: rgba(0,0,0,0.3);
+            font-weight: 600;
+            color: #00d9ff;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-green { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .badge-yellow { background: rgba(255,170,0,0.2); color: #ffaa00; }
+        .badge-red { background: rgba(255,68,68,0.2); color: #ff4444; }
+        .badge-gray { background: rgba(255,255,255,0.1); color: #888; }
+
+        .btn-action {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            background: rgba(0,217,255,0.3);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 13px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div>
+                <h1>🔄 Mix Validade - PCEP</h1>
+                <p class="subtitle">Neon Analytics Pro</p>
+            </div>
+            <div class="header-actions">
+                <div class="sync-status">
+                    <div class="sync-indicator" id="sync-indicator"></div>
+                    <span id="status-sync">Sincronizando...</span>
+                </div>
+                <button class="btn btn-primary" onclick="sincronizarDados()">🔄 Sincronizar</button>
+                <button class="btn btn-secondary" onclick="exportarCSV()">📥 Exportar</button>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="icon">📦</div>
+                <div class="value" id="count-total">0</div>
+                <div class="label">Total de Registros</div>
+            </div>
+            <div class="stat-card green">
+                <div class="icon">✅</div>
+                <div class="value" id="count-disponiveis">0</div>
+                <div class="label">Disponíveis (Sem Bloqueio)</div>
+            </div>
+            <div class="stat-card yellow">
+                <div class="icon">⚠️</div>
+                <div class="value" id="count-avarias">0</div>
+                <div class="label">Avarias</div>
+            </div>
+            <div class="stat-card red">
+                <div class="icon">🚫</div>
+                <div class="value" id="count-bloqueados">0</div>
+                <div class="label">Bloqueados</div>
+            </div>
+            <div class="stat-card green">
+                <div class="icon">🟢</div>
+                <div class="value" id="count-zona-verde">0</div>
+                <div class="label">Zona Verde (+30 dias)</div>
+            </div>
+            <div class="stat-card yellow">
+                <div class="icon">🟡</div>
+                <div class="value" id="count-atencao">0</div>
+                <div class="label">Atenção (10-30 dias)</div>
+            </div>
+            <div class="stat-card red">
+                <div class="icon">🔴</div>
+                <div class="value" id="count-critico">0</div>
+                <div class="label">Zona Vermelha (<10 dias)</div>
+            </div>
+            <div class="stat-card red">
+                <div class="icon">❌</div>
+                <div class="value" id="count-vencidos">0</div>
+                <div class="label">Vencidos</div>
+            </div>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="alert-banner" id="alert-banner" style="display: none;">
+            <div class="icon">⚠️</div>
+            <div class="content">
+                <h3>Itens Críticos Detectados</h3>
+                <p>Produtos com validade próxima requerem atenção imediata.</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="todos">Todos</button>
+            <button class="filter-btn" data-filter="7dias">7 Dias</button>
+            <button class="filter-btn" data-filter="30dias">30 Dias</button>
+            <button class="filter-btn" data-filter="giro">Giro Alto</button>
+            <button class="filter-btn" data-filter="critico">Crítico</button>
+            <button class="filter-btn clear" onclick="limparFiltros()">🗑️ Limpar</button>
+        </div>
+
+        <!-- Main Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2>📊 Produtos por Validade</h2>
+                <button class="btn btn-secondary" onclick="sincronizarDados()">🔄 Atualizar</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Depósito</th>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Validade</th>
+                        <th>Disponível</th>
+                        <th>Avaria</th>
+                        <th>Bloqueado</th>
+                        <th>Giro/Dia</th>
+                        <th>Situação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-body">
+                    <tr>
+                        <td colspan="10" class="loading">
+                            <div class="loading-spinner"></div>
+                            Carregando dados da planilha...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Expired Products Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2>❌ Produtos Vencidos <span id="vencidos-count" style="font-size: 14px; color: #ff4444;">(0 lotes)</span></h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Depósito</th>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Validade</th>
+                        <th>Disponível</th>
+                        <th>Avaria</th>
+                        <th>Bloqueado</th>
+                        <th>Dias Vencido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-vencidos">
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: #666;">Nenhum produto vencido</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-info">
+                <span>🔄 Auto-sync: 5min</span>
+                <span>🔍 Ctrl+F Busca</span>
+                <span>📥 Ctrl+E Exportar</span>
+                <span>⏰ Atualizado: <strong id="ultima-atualizacao">--:--:--</strong></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- PapaParse Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <script>
+        // CONFIGURAÇÃO: Link da planilha Google Sheets publicada em CSV
+        const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTbDemfwAw-yIPgp9TCKDynQy2s-7yo57v4m5-5knXyBNFBwCyH5iBqL-93TZ6HLg5Uod5wxSwo_pu/pub?gid=641828317&single=true&output=csv';
+        
+        let dadosGlobais = [];
+        let filtroAtual = 'todos';
+        let autoSyncInterval;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            sincronizarDados();
+            iniciarAutoSync();
+            configurarFiltros();
+            configurarAtalhos();
+        });
+
+        // Função principal de sincronização
+        async function sincronizarDados() {
+            const indicator = document.getElementById('sync-indicator');
+            const status = document.getElementById('status-sync');
+            
+            indicator.classList.add('syncing');
+            status.innerText = 'Sincronizando...';
+            
+            try {
+                const response = await fetch(PLANILHA_URL);
+                if (!response.ok) throw new Error('Falha ao carregar dados');
+                
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        dadosGlobais = results.data;
+                        renderizarTabela(dadosGlobais);
+                        atualizarContadores(dadosGlobais);
+                        atualizarTabelaVencidos(dadosGlobais);
+                        
+                        const agora = new Date();
+                        const horaFormatada = agora.toLocaleTimeString('pt-BR');
+                        document.getElementById('ultima-atualizacao').innerText = horaFormatada;
+                        status.innerText = 'Atualizado: ' + horaFormatada;
+                        indicator.classList.remove('syncing');
+                    },
+                    error: function(error) {
+                        throw error;
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao sincronizar:', error);
+                status.innerText = '❌ Erro na sincronização';
+                indicator.classList.remove('syncing');
+                indicator.style.background = '#ff4444';
+            }
+        }
+
+        // Renderizar tabela principal
+        function renderizarTabela(dados) {
+            const tbody = document.getElementById('tabela-body');
+            const dadosFiltrados = aplicarFiltro(dados);
+            
+            if (dadosFiltrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #666; padding: 40px;">Nenhum produto encontrado com os filtros aplicados</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            dadosFiltrados.forEach(linha => {
+                const tr = document.createElement('tr');
+                const situacaoClass = getClasseStatus(linha.Validade, linha.Situação);
+                
+                tr.innerHTML = `
+                    <td>${linha.Depósito || '-'}</td>
+                    <td><strong>${linha.Código || '-'}</strong></td>
+                    <td>${linha.Descrição || '-'}</td>
+                    <td>${formatarData(linha.Validade)}</td>
+                    <td>${formatarNumero(linha.Disponível)}</td>
+                    <td>${formatarNumero(linha.Avaria)}</td>
+                    <td>${formatarNumero(linha.Bloqueado)}</td>
+                    <td>${formatarNumero(linha['Giro/Dia'])}</td>
+                    <td><span class="badge ${situacaoClass}">${linha.Situação || 'Normal'}</span></td>
+                    <td><button class="btn-action" onclick="alert('Ações para: ${linha.Código}')">⋮</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Renderizar tabela de vencidos
+        function atualizarTabelaVencidos(dados) {
+            const tbody = document.getElementById('tabela-vencidos');
+            const vencidosCount = document.getElementById('vencidos-count');
+            const hoje = new Date();
+            
+            const vencidos = dados.filter(linha => {
+                if (!linha.Validade) return false;
+                const dataValidade = parseData(linha.Validade);
+                return dataValidade && dataValidade < hoje;
+            });
+
+            vencidosCount.innerText = `(${vencidos.length} lotes)`;
+
+            if (vencidos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666; padding: 40px;">Nenhum produto vencido</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            vencidos.forEach(linha => {
+                const tr = document.createElement('tr');
+                const dataValidade = parseData(linha.Validade);
+                const diasVencido = dataValidade ? Math.floor((hoje - dataValidade) / (1000 * 60 * 60 * 24)) : 0;
+                
+                tr.innerHTML = `
+                    <td>${linha.Depósito || '-'}</td>
+                    <td><strong>${linha.Código || '-'}</strong></td>
+                    <td>${linha.Descrição || '-'}</td>
+                    <td style="color: #ff4444;">${formatarData(linha.Validade)}</td>
+                    <td>${formatarNumero(linha.Disponível)}</td>
+                    <td>${formatarNumero(linha.Avaria)}</td>
+                    <td>${formatarNumero(linha.Bloqueado)}</td>
+                    <td style="color: #ff4444;"><strong>${diasVencido} dias</strong></td>
+                    <td><button class="btn-action" onclick="alert('Ações para: ${linha.Código}')">⋮</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Atualizar contadores
+        function atualizarContadores(dados) {
+            let total = dados.length;
+            let disponiveis = 0, avarias = 0, bloqueados = 0;
+            let zonaVerde = 0, atencao = 0, critico = 0, vencidos = 0;
+            const hoje = new Date();
+
+            dados.forEach(linha => {
+                // Contagem de estoque
+                const disp = parseInt(linha.Disponível) || 0;
+                const av = parseInt(linha.Avaria) || 0;
+                const bloq = parseInt(linha.Bloqueado) || 0;
+                
+                if (disp > 0) disponiveis++;
+                if (av > 0) avarias++;
+                if (bloq > 0) bloqueados++;
+
+                // Contagem por validade
+                if (linha.Validade) {
+                    const dataValidade = parseData(linha.Validade);
+                    if (dataValidade) {
+                        const diasRestantes = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+                        
+                        if (diasRestantes < 0) {
+                            vencidos++;
+                        } else if (diasRestantes < 10) {
+                            critico++;
+                        } else if (diasRestantes <= 30) {
+                            atencao++;
+                        } else {
+                            zonaVerde++;
+                        }
+                    }
+                }
+            });
+
+            // Mostrar alerta se houver críticos
+            const alertBanner = document.getElementById('alert-banner');
+            if (critico > 0 || vencidos > 0) {
+                alertBanner.style.display = 'flex';
+            } else {
+                alertBanner.style.display = 'none';
+            }
+
+            // Atualizar DOM
+            document.getElementById('count-total').innerText = total;
+            document.getElementById('count-disponiveis').innerText = disponiveis;
+            document.getElementById('count-avarias').innerText = avarias;
+            document.getElementById('count-bloqueados').innerText = bloqueados;
+            document.getElementById('count-zona-verde').innerText = zonaVerde;
+            document.getElementById('count-atencao').innerText = atencao;
+            document.getElementById('count-critico').innerText = critico;
+            document.getElementById('count-vencidos').innerText = vencidos;
+        }
+
+        // Aplicar filtros
+        function aplicarFiltro(dados) {
+            if (filtroAtual === 'todos') return dados;
+            
+            const hoje = new Date();
+            
+            return dados.filter(linha => {
+                if (!linha.Validade) return false;
+                const dataValidade = parseData(linha.Validade);
+                if (!dataValidade) return false;
+                
+                const diasRestantes = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+                
+                switch (filtroAtual) {
+                    case '7dias':
+                        return diasRestantes >= 0 && diasRestantes <= 7;
+                    case '30dias':
+                        return diasRestantes >= 0 && diasRestantes <= 30;
+                    case 'giro':
+                        return (parseInt(linha['Giro/Dia']) || 0) > 10;
+                    case 'critico':
+                        return diasRestantes < 10;
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        // Configurar botões de filtro
+        function configurarFiltros() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.classList.contains('clear')) return;
+                    
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    filtroAtual = this.dataset.filter;
+                    renderizarTabela(dadosGlobais);
+                });
+            });
+        }
+
+        // Limpar filtros
+        function limparFiltros() {
+            filtroAtual = 'todos';
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-filter="todos"]').classList.add('active');
+            renderizarTabela(dadosGlobais);
+        }
+
+        // Auto-sync
+        function iniciarAutoSync() {
+            autoSyncInterval = setInterval(sincronizarDados, 300000); // 5 minutos
+        }
+
+        // Exportar CSV
+        function exportarCSV() {
+            const csv = Papa.unparse(dadosGlobais);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `mix_validade_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Atalhos de teclado
+        function configurarAtalhos() {
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    exportarCSV();
+                }
+            });
+        }
+
+        // Utilitários
+        function getClasseStatus(validade, situacao) {
+            if (!validade) return 'badge-gray';
+            
+            const hoje = new Date();
+            const dataValidade = parseData(validade);
+            
+            if (!dataValidade) return 'badge-gray';
+            
+            const diasRestantes = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+            
+            if (diasRestantes < 0) return 'badge-red';
+            if (diasRestantes < 10) return 'badge-red';
+            if (diasRestantes <= 30) return 'badge-yellow';
+            return 'badge-green';
+        }
+
+        function parseData(dataStr) {
+            if (!dataStr) return null;
+            
+            // Tenta formato DD/MM/YYYY
+            const partes = dataStr.split('/');
+            if (partes.length === 3) {
+                return new Date(partes[2], partes[1] - 1, partes[0]);
+            }
+            
+            // Tenta formato ISO
+            const data = new Date(dataStr);
+            return isNaN(data.getTime()) ? null : data;
+        }
+
+        function formatarData(dataStr) {
+            if (!dataStr) return '-';
+            const data = parseData(dataStr);
+            if (!data) return dataStr;
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        function formatarNumero(num) {
+            if (num === undefined || num === null || num === '') return '0';
+            return num;
+        }
+    </script>
+</body>
+</html>
